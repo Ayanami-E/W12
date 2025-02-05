@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "books-project": "file:"
+    "books-project": "file:",
+    "cors": "^2.8.5"
   }
 }
