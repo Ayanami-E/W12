@@ -1,40 +1,29 @@
+// server/app.ts
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
 const app = express();
 
-// 中间件
 app.use(express.json());
+app.use(cors());
 
-// CORS 配置
-if (process.env.NODE_ENV === 'development') {
-  const corsOptions = {
-    origin: 'http://localhost:3000',
-    optionsSuccessStatus: 200
-  };
-  app.use(cors(corsOptions));
-}
-
-// 连接 MongoDB
 mongoose.connect('mongodb://127.0.0.1:27017/bookstore')
   .then(() => {
-    console.log('Successfully connected to MongoDB.');
+    console.log('Connected to MongoDB');
   })
   .catch((error) => {
-    console.error('MongoDB connection error:', error);
+    console.error('Error connecting to MongoDB:', error);
   });
 
-// Book Schema
 const bookSchema = new mongoose.Schema({
-  name: String,
-  author: String,
-  pages: Number
+  author: { type: String, required: true },
+  name: { type: String, required: true },
+  pages: { type: Number, required: true }
 });
 
 const Book = mongoose.model('Book', bookSchema);
 
-// POST 路由
 app.post('/api/book', async (req, res) => {
   try {
     const book = new Book(req.body);
