@@ -1,24 +1,24 @@
-// server/app.ts
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
 const app = express();
 
-app.use(express.json());
-app.use(cors());
+// 开发环境下启用CORS
+if (process.env.NODE_ENV === 'development') {
+  const corsOptions = {
+    origin: 'http://localhost:3000', // 允许来自http://localhost:3000的请求
+    optionsSuccessStatus: 200, // 设置成功状态码
+  };
+  app.use(cors(corsOptions)); // 启用CORS
+}
 
-// 连接 MongoDB 和创建集合
+app.use(express.json());
+
+// MongoDB连接和创建集合的代码
 const connectDB = async () => {
   try {
     await mongoose.connect('mongodb://127.0.0.1:27017/bookstore');
-    
-    // 确保 books 集合存在
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    if (!collections.some(c => c.name === 'books')) {
-      await mongoose.connection.db.createCollection('books');
-    }
-    
     console.log('Successfully connected to MongoDB.');
   } catch (error) {
     console.error('MongoDB connection error:', error);
@@ -29,7 +29,7 @@ const connectDB = async () => {
 // 执行连接
 connectDB();
 
-// Book Schema 显式指定集合名称
+// Book Schema 定义和接口路由
 const bookSchema = new mongoose.Schema({
   author: { type: String, required: true },
   name: { type: String, required: true },
@@ -51,10 +51,6 @@ app.post('/api/book', async (req, res) => {
 const PORT = 1234;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB error:', err);
 });
 
 export default app;
