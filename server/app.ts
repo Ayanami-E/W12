@@ -24,7 +24,8 @@ mongoose.connect('mongodb://127.0.0.1:27017/bookstore', {
 })
 .then(async () => {
   const db = mongoose.connection.db;
-  // 检查是否已存在 books 集合，如果不存在则创建
+
+  // 确保在数据库连接成功后检查并创建 "books" 集合
   const collections = await db.listCollections({ name: 'books' }).toArray();
   if (collections.length === 0) {
     await db.createCollection('books');
@@ -37,8 +38,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/bookstore', {
   process.exit(1);
 });
 
-//【新增代码】
-// 添加一个中间件，确保每次请求前 "books" 集合存在
+// 创建一个中间件来检查集合是否存在，并在每次请求前确保其存在
 app.use(async (req, res, next) => {
   try {
     const db = mongoose.connection.db;
@@ -94,7 +94,7 @@ app.listen(PORT, () => {
   })();
 });
 
-// 【新增】定时任务：每秒检查一次 "books" 集合是否存在
+// 定时任务：每秒检查一次 "books" 集合是否存在
 setInterval(async () => {
   try {
     const db = mongoose.connection.db;
