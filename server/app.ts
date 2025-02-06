@@ -1,3 +1,4 @@
+// server/app.ts
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
@@ -16,7 +17,6 @@ const connectDB = async () => {
     const collections = await mongoose.connection.db.listCollections().toArray();
     if (!collections.some(c => c.name === 'books')) {
       await mongoose.connection.db.createCollection('books');
-      console.log('Books collection created');
     }
     
     console.log('Successfully connected to MongoDB.');
