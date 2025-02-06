@@ -6,14 +6,17 @@ import mongoose from 'mongoose';
 const app = express();
 
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000',
+  credentials: true
+}));
 
-// 连接 MongoDB 和创建集合
 const connectDB = async () => {
   try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/bookstore');
+    await mongoose.connect('mongodb://127.0.0.1:27017/bookstore', {
+      serverSelectionTimeoutMS: 5000,
+    });
     
-    // 确保 books 集合存在
     const collections = await mongoose.connection.db.listCollections().toArray();
     if (!collections.some(c => c.name === 'books')) {
       await mongoose.connection.db.createCollection('books');
@@ -26,10 +29,8 @@ const connectDB = async () => {
   }
 };
 
-// 执行连接
 connectDB();
 
-// Book Schema 显式指定集合名称
 const bookSchema = new mongoose.Schema({
   author: { type: String, required: true },
   name: { type: String, required: true },
@@ -55,6 +56,11 @@ app.listen(PORT, () => {
 
 mongoose.connection.on('error', (err) => {
   console.error('MongoDB error:', err);
+});
+
+process.on('SIGINT', async () => {
+  await mongoose.connection.close();
+  process.exit(0);
 });
 
 export default app;
