@@ -1,19 +1,18 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Server side of the full-stack app",
+  "main": "app.ts",
   "scripts": {
     "tsc": "tsc",
     "dev": "ts-node-dev --respawn app.ts",
     "lint": "eslint --ext .ts .",
-    "start": "node app.js"
+    "start": "node dist/app.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.18.2",
-    "mongoose": "^7.3.1",
-    "server": "file:"
+    "mongoose": "^7.3.1"
   },
   "devDependencies": {
     "@types/cors": "^2.8.13",
