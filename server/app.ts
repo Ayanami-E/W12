@@ -11,7 +11,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // 连接到 MongoDB
-mongoose.connect('mongodb://localhost:27017/booksdb', { useNewUrlParser: true})
+mongoose.connect('mongodb://localhost:27017/booksdb', { useUnifiedTopology: true,})
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('Error connecting to MongoDB:', err));
 
