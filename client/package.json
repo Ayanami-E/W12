@@ -10,7 +10,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "client": "file:",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.1.5"
@@ -20,6 +19,7 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react-ts": "^4.3.4",  // 添加此行
     "eslint": "^9.17.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.16",
