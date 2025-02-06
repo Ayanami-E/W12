@@ -1,38 +1,40 @@
+// server/src/app.ts
 import express from 'express';
+import cors from 'cors';
 import mongoose from 'mongoose';
+import bodyParser from 'body-parser';
 
 const app = express();
 
-// MongoDB 数据库连接配置
-mongoose.connect('mongodb://127.0.0.1:27017/bookstore', {
-  serverSelectionTimeoutMS: 5000,
-})
-  .then(async () => {
-    const db = mongoose.connection.db;
+// 启用 CORS
+app.use(cors());
+app.use(bodyParser.json());
 
-    // 确保连接成功后稍等片刻，确保数据库完全就绪
-    setTimeout(async () => {
-      try {
-        const collections = await db.listCollections({ name: 'books' }).toArray();
-        if (collections.length === 0) {
-          await db.createCollection('books');
-          console.log('Created "books" collection.');
-        }
-      } catch (error) {
-        console.error('Error ensuring "books" collection exists:', error);
-      }
-    }, 2000); // 延迟 2 秒钟以确保数据库已完全就绪
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
-  });
+// 连接到 MongoDB
+mongoose.connect('mongodb://localhost:27017/booksdb', { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch((err) => console.error('Error connecting to MongoDB:', err));
 
-// Express 路由和其他配置
-app.get('/', (req, res) => {
-  res.send('Server is running');
+// 创建 Book 模型
+const bookSchema = new mongoose.Schema({
+  author: String,
+  name: String,
+  pages: Number,
+});
+const Book = mongoose.model('Book', bookSchema);
+
+// POST 路由：保存书籍信息
+app.post('/api/book', async (req, res) => {
+  const { author, name, pages } = req.body;
+
+  const book = new Book({ author, name, pages });
+  await book.save();
+
+  res.status(201).json(book);
 });
 
-app.listen(1234, () => {
-  console.log('Server running on port 1234');
+// 启动服务器
+const PORT = 1234;
+app.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
 });

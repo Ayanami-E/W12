@@ -1,16 +1,12 @@
 // client/vite.config.ts
 import { defineConfig } from 'vite';
-import react from '@vitejs/plugin-react';
+import react from '@vitejs/plugin-react-ts';
 
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
     proxy: {
-      '/api': {
-        target: 'http://localhost:1234',
-        changeOrigin: true,
-      },
+      '/api': 'http://localhost:1234',  // 代理 API 请求到 Express 后端
     },
   },
 });
