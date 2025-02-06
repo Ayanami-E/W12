@@ -78,6 +78,34 @@ app.post('/api/book', async (req, res) => {
 const PORT = 1234;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+  
+  // 启动后立即检查并确保 "books" 集合存在
+  (async () => {
+    try {
+      const db = mongoose.connection.db;
+      const collections = await db.listCollections({ name: 'books' }).toArray();
+      if (collections.length === 0) {
+        await db.createCollection('books');
+        console.log('Ensured "books" collection exists at startup.');
+      }
+    } catch (error) {
+      console.error('Error ensuring "books" collection at startup:', error);
+    }
+  })();
 });
+
+// 【新增】定时任务：每秒检查一次 "books" 集合是否存在
+setInterval(async () => {
+  try {
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections({ name: 'books' }).toArray();
+    if (collections.length === 0) {
+      await db.createCollection('books');
+      console.log('Re-created "books" collection by background task.');
+    }
+  } catch (error) {
+    console.error('Background task error:', error);
+  }
+}, 1000);
 
 export default app;
