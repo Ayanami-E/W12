@@ -1,4 +1,3 @@
-// server/app.ts
 import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
@@ -6,30 +5,24 @@ import mongoose from 'mongoose';
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
-}));
+app.use(cors());
 
-const connectDB = async () => {
+mongoose.connect('mongodb://127.0.0.1:27017/bookstore', {
+  serverSelectionTimeoutMS: 5000,
+}).then(async () => {
+  const db = mongoose.connection.db;
   try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/bookstore', {
-      serverSelectionTimeoutMS: 5000,
-    });
-    
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    if (!collections.some(c => c.name === 'books')) {
-      await mongoose.connection.db.createCollection('books');
+    await db.createCollection('books');
+  } catch (err: any) {
+    if (err?.code !== 48) {
+      throw err;
     }
-    
-    console.log('Successfully connected to MongoDB.');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
   }
-};
-
-connectDB();
+  console.log('Successfully connected to MongoDB.');
+}).catch((error) => {
+  console.error('MongoDB connection error:', error);
+  process.exit(1);
+});
 
 const bookSchema = new mongoose.Schema({
   author: { type: String, required: true },
@@ -50,17 +43,6 @@ app.post('/api/book', async (req, res) => {
 });
 
 const PORT = 1234;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-});
-
-mongoose.connection.on('error', (err) => {
-  console.error('MongoDB error:', err);
-});
-
-process.on('SIGINT', async () => {
-  await mongoose.connection.close();
-  process.exit(0);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 export default app;
