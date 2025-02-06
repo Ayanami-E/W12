@@ -37,6 +37,22 @@ mongoose.connect('mongodb://127.0.0.1:27017/bookstore', {
   process.exit(1);
 });
 
+//【新增代码】
+// 添加一个中间件，确保每次请求前 "books" 集合存在
+app.use(async (req, res, next) => {
+  try {
+    const db = mongoose.connection.db;
+    const collections = await db.listCollections({ name: 'books' }).toArray();
+    if (collections.length === 0) {
+      await db.createCollection('books');
+      console.log('Re-created "books" collection.');
+    }
+  } catch (error) {
+    console.error("Error ensuring 'books' collection exists:", error);
+  }
+  next();
+});
+
 // 定义书籍的 Mongoose Schema 与 Model  
 const bookSchema = new mongoose.Schema({
   author: { type: String, required: true },
