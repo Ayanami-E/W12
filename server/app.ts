@@ -18,7 +18,7 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 // 连接到 MongoDB
-const mongoURI = 'mongodb://localhost:27017/test';
+const mongoURI = 'mongodb://localhost:27017/booksdb';
 
 mongoose.connect(mongoURI)
   .then(() => {
