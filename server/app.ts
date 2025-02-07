@@ -16,17 +16,30 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// MongoDB connection
-const mongoURI = 'mongodb://localhost:27017/booksdb';
+// MongoDB connection with database name explicitly specified
+const DB_NAME = 'test'; // 使用 'test' 作为默认数据库名
+const mongoURI = `mongodb://localhost:27017/${DB_NAME}`;
 
-mongoose.connect(mongoURI)
-  .then(() => {
+// 确保在连接时创建数据库和集合
+async function initializeDatabase() {
+  try {
+    await mongoose.connect(mongoURI);
     console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
+    
+    // 确保 books 集合存在
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    if (!collections.find(c => c.name === 'books')) {
+      await mongoose.connection.db.createCollection('books');
+      console.log('Books collection created');
+    }
+  } catch (err) {
     console.error('Error connecting to MongoDB:', err);
     process.exit(1);
-  });
+  }
+}
+
+// 初始化数据库
+initializeDatabase();
 
 // Define Book interface
 interface IBook {
