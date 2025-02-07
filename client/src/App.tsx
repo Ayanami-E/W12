@@ -1,58 +1,65 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, Link, useParams } from 'react-router-dom';
 
 function App() {
-  const [author, setAuthor] = useState('');
-  const [name, setName] = useState('');
-  const [pages, setPages] = useState(0);
+  const [books, setBooks] = useState([]);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    const bookData = { author, name, pages };
-
-    try {
-      const response = await fetch('http://localhost:3000/api/book', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookData),
-      });
-
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Book added:', result);
-      } else {
-        console.error('Error adding book');
-      }
-    } catch (error) {
-      console.error('Error:', error);
+  // Fetch books from the API
+  useEffect(() => {
+    async function fetchBooks() {
+      const response = await fetch('/api/books');
+      const data = await response.json();
+      setBooks(data);
     }
-  };
+    fetchBooks();
+  }, []);
+
+  return (
+    <Router>
+      <div>
+        <h1>Books</h1>
+        <nav>
+          {books.map((book: any) => (
+            <Link key={book._id} to={`/book/${book.name}`}>
+              {book.name}
+            </Link>
+          ))}
+        </nav>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/book/:bookName" element={<BookDetails />} />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
+
+function Home() {
+  return <div>Welcome to the Books app!</div>;
+}
+
+function BookDetails() {
+  const { bookName } = useParams();
+  const [book, setBook] = useState<any>(null);
+
+  useEffect(() => {
+    async function fetchBookDetails() {
+      const response = await fetch(`/api/book/${bookName}`);
+      const data = await response.json();
+      setBook(data);
+    }
+    fetchBookDetails();
+  }, [bookName]);
+
+  if (!book) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div>
-      <h1>Books</h1>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Author"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Book Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Pages"
-          value={pages}
-          onChange={(e) => setPages(Number(e.target.value))}
-        />
-        <button type="submit">Add Book</button>
-      </form>
+      <h2>{book.name}</h2>
+      <p>Author: {book.author}</p>
+      <p>Pages: {book.pages}</p>
     </div>
   );
 }
