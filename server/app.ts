@@ -15,14 +15,17 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Define Book interface
+// MongoDB connection
+const mongoURI = 'mongodb://localhost:27017/test';
+
+// Define interfaces
 interface IBook {
   author: string;
   name: string;
   pages: number;
 }
 
-// Create Book schema
+// Create Book schema first
 const bookSchema = new mongoose.Schema<IBook>({
   author: { type: String, required: true },
   name: { type: String, required: true },
@@ -31,28 +34,29 @@ const bookSchema = new mongoose.Schema<IBook>({
   collection: 'books'
 });
 
-// MongoDB connection and model setup
-const mongoURI = 'mongodb://localhost:27017/test';
-
-mongoose.connect(mongoURI)
-  .then(async () => {
-    console.log('Connected to MongoDB');
-    try {
-      // Try to create the collection if it doesn't exist
-      await mongoose.connection.db.createCollection('books');
-      console.log('Books collection created or already exists');
-    } catch (err) {
-      // Ignore error if collection already exists
-      console.log('Collection setup completed');
-    }
-  })
-  .catch((err) => {
-    console.error('Error connecting to MongoDB:', err);
-    process.exit(1);
-  });
-
-// Create Book model
+// Create the model once
 const Book = mongoose.model<IBook>('Book', bookSchema);
+
+// Initialize database and ensure collection exists
+async function initializeDatabase() {
+  try {
+    await mongoose.connect(mongoURI);
+    console.log('Connected to MongoDB');
+
+    // Try to create collection if it doesn't exist
+    const collections = await mongoose.connection.db.listCollections().toArray();
+    if (!collections.find(c => c.name === 'books')) {
+      await mongoose.connection.createCollection('books');
+      console.log('Books collection created');
+    }
+  } catch (err) {
+    console.error('Database initialization error:', err);
+    process.exit(1);
+  }
+}
+
+// Initialize database
+initializeDatabase();
 
 // POST route to save book
 app.post('/api/book', async (req: Request, res: Response) => {
