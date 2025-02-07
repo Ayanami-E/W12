@@ -5,8 +5,14 @@ import bodyParser from 'body-parser';
 
 const app = express();
 
-// 设置默认环境为 development
-process.env.NODE_ENV = 'development';
+if (process.env.NODE_ENV === 'development') {
+  const corsOptions = {
+    origin: 'http://localhost:3000',  // React frontend port
+    optionsSuccessStatus: 200,
+  };
+  app.use(cors(corsOptions)); // Use the cors middleware with the specified options
+}
+
 
 // 配置 CORS 以允许从 React 应用（端口3000）的请求
 const corsOptions = {
