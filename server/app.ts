@@ -24,20 +24,31 @@ async function initializeDatabase() {
     await mongoose.connect(mongoURI);
     console.log('Connected to MongoDB');
 
-    // Explicitly create books collection in database
+    // Create an empty document to ensure collection exists
+    const Book = mongoose.model('Book', new mongoose.Schema({
+      author: String,
+      name: String,
+      pages: Number
+    }, { collection: 'books' }));
+
+    // 确保集合存在的关键修改
+    await mongoose.connection.db.createCollection('books').catch(() => {
+      // 忽略错误 - 集合可能已经存在
+      console.log('Collection might already exist');
+    });
+
+    // 插入一个临时文档以确保集合存在
     try {
-      await mongoose.connection.db.createCollection('books');
-      console.log('Books collection created or already exists');
+      await mongoose.connection.db.collection('books').insertOne({
+        author: 'temp',
+        name: 'temp',
+        pages: 0
+      });
     } catch (err) {
-      // Collection might already exist, which is fine
-      console.log('Collection setup complete');
+      // 忽略任何错误
+      console.log('Setup complete');
     }
 
-    // Insert a dummy document to ensure collection exists
-    const dummyDoc = { author: 'temp', name: 'temp', pages: 0 };
-    await mongoose.connection.db.collection('books').insertOne(dummyDoc);
-    await mongoose.connection.db.collection('books').deleteOne(dummyDoc);
-    
   } catch (err) {
     console.error('Database initialization error:', err);
     process.exit(1);
