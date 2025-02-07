@@ -5,46 +5,69 @@ import bodyParser from 'body-parser';
 
 const app = express();
 
-// 启用 CORS 以允许跨域请求
+// 中间件
 app.use(cors());
 app.use(bodyParser.json());
 
-// 连接到 MongoDB
-const mongoURI = 'mongodb://localhost:27017/booksdb';  // 替换为你自己的 MongoDB 连接字符串
-mongoose.connect(mongoURI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-  })
-  .catch((err) => {
-    console.error('Error connecting to MongoDB:', err);
-    process.exit(1); // 连接失败时退出程序
-  });
+// 连接到 MongoDB 并初始化
+const init = async () => {
+  try {
+    await mongoose.connect('mongodb://127.0.0.1:27017/bookstore');
+    const db = mongoose.connection.db;
+    
+    // 确保 books 集合存在
+    const collections = await db.listCollections().toArray();
+    if (!collections.some(c => c.name === 'books')) {
+      await db.createCollection('books');
+    }
+    
+    console.log('Successfully connected to MongoDB.');
+  } catch (err: any) {
+    if (err.code !== 48) {
+      console.error('MongoDB connection error:', err);
+      process.exit(1);
+    }
+  }
+};
 
-// 创建 Book 模型
+init();
+
+// Book 模型
 const bookSchema = new mongoose.Schema({
-  author: String,
-  name: String,
-  pages: Number,
-});
+  author: { type: String, required: true },
+  name: { type: String, required: true },
+  pages: { type: Number, required: true }
+}, { collection: 'books' });
 
 const Book = mongoose.model('Book', bookSchema);
 
-// POST 路由：保存书籍信息
+// POST 路由
 app.post('/api/book', async (req, res) => {
-  const { author, name, pages } = req.body;
-
   try {
-    const book = new Book({ author, name, pages });
-    await book.save();
-    res.status(201).json(book);  // 返回成功创建的书籍数据
+    const book = new Book(req.body);
+    const savedBook = await book.save();
+    res.status(200).json(savedBook);
   } catch (error) {
     console.error('Error saving book:', error);
-    res.status(500).json({ message: 'Failed to save book' });
+    res.status(500).json({ error: 'Error saving book' });
   }
 });
 
 // 启动服务器
-const PORT = 3000;
+const PORT = 1234;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
+
+// 错误处理
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB error:', err);
+});
+
+// 进程退出处理
+process.on('SIGINT', async () => {
+  await mongoose.connection.close();
+  process.exit(0);
+});
+
+export default app;
