@@ -1,7 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
-import { config } from 'dotenv';
 
 const app = express();
 
@@ -16,30 +15,18 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// MongoDB connection with database name explicitly specified
-const DB_NAME = 'test'; // 使用 'test' 作为默认数据库名
+// MongoDB connection
+const DB_NAME = 'booksdb'; // 使用指定的数据库名称
 const mongoURI = `mongodb://localhost:27017/${DB_NAME}`;
 
-// 确保在连接时创建数据库和集合
-async function initializeDatabase() {
-  try {
-    await mongoose.connect(mongoURI);
+mongoose.connect(mongoURI)
+  .then(() => {
     console.log('Connected to MongoDB');
-    
-    // 确保 books 集合存在
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    if (!collections.find(c => c.name === 'books')) {
-      await mongoose.connection.db.createCollection('books');
-      console.log('Books collection created');
-    }
-  } catch (err) {
+  })
+  .catch((err) => {
     console.error('Error connecting to MongoDB:', err);
     process.exit(1);
-  }
-}
-
-// 初始化数据库
-initializeDatabase();
+  });
 
 // Define Book interface
 interface IBook {
@@ -48,11 +35,13 @@ interface IBook {
   pages: number;
 }
 
-// Create Book schema
+// Create Book schema with specific collection name
 const bookSchema = new mongoose.Schema<IBook>({
   author: { type: String, required: true },
   name: { type: String, required: true },
   pages: { type: Number, required: true }
+}, {
+  collection: 'books' // 明确指定集合名称为 'books'
 });
 
 const Book = mongoose.model<IBook>('Book', bookSchema);
