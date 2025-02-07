@@ -18,37 +18,26 @@ app.use(express.json());
 // MongoDB connection
 const mongoURI = 'mongodb://localhost:27017/test';
 
-// Define interfaces
-interface IBook {
-  author: string;
-  name: string;
-  pages: number;
-}
-
-// Create Book schema first
-const bookSchema = new mongoose.Schema<IBook>({
-  author: { type: String, required: true },
-  name: { type: String, required: true },
-  pages: { type: Number, required: true }
-}, {
-  collection: 'books'
-});
-
-// Create the model once
-const Book = mongoose.model<IBook>('Book', bookSchema);
-
 // Initialize database and ensure collection exists
 async function initializeDatabase() {
   try {
     await mongoose.connect(mongoURI);
     console.log('Connected to MongoDB');
 
-    // Try to create collection if it doesn't exist
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    if (!collections.find(c => c.name === 'books')) {
-      await mongoose.connection.createCollection('books');
-      console.log('Books collection created');
+    // Explicitly create books collection in database
+    try {
+      await mongoose.connection.db.createCollection('books');
+      console.log('Books collection created or already exists');
+    } catch (err) {
+      // Collection might already exist, which is fine
+      console.log('Collection setup complete');
     }
+
+    // Insert a dummy document to ensure collection exists
+    const dummyDoc = { author: 'temp', name: 'temp', pages: 0 };
+    await mongoose.connection.db.collection('books').insertOne(dummyDoc);
+    await mongoose.connection.db.collection('books').deleteOne(dummyDoc);
+    
   } catch (err) {
     console.error('Database initialization error:', err);
     process.exit(1);
@@ -57,6 +46,24 @@ async function initializeDatabase() {
 
 // Initialize database
 initializeDatabase();
+
+// Define interfaces
+interface IBook {
+  author: string;
+  name: string;
+  pages: number;
+}
+
+// Create Book schema
+const bookSchema = new mongoose.Schema<IBook>({
+  author: { type: String, required: true },
+  name: { type: String, required: true },
+  pages: { type: Number, required: true }
+}, {
+  collection: 'books'
+});
+
+const Book = mongoose.model<IBook>('Book', bookSchema);
 
 // POST route to save book
 app.post('/api/book', async (req: Request, res: Response) => {
