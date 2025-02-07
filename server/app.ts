@@ -44,7 +44,7 @@ app.post('/api/book', async (req, res) => {
 });
 
 // 启动服务器
-const PORT = 1234;
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
