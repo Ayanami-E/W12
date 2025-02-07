@@ -5,27 +5,22 @@ import bodyParser from 'body-parser';
 
 const app = express();
 
-// Enable CORS for development mode
-if (process.env.NODE_ENV === 'development') {
-  const corsOptions = {
-    origin: 'http://localhost:3000',  // Allow frontend on port 3000 (Vite's default port)
-    optionsSuccessStatus: 200,
-  };
-  app.use(cors(corsOptions));
-}
-
+// 启用 CORS 以允许跨域请求
+app.use(cors());
 app.use(bodyParser.json());
 
-// MongoDB connection string
-const mongoURI = 'mongodb://localhost:27017/booksdb';
+// 连接到 MongoDB
+const mongoURI = 'mongodb://localhost:27017/booksdb';  // 替换为你自己的 MongoDB 连接字符串
 mongoose.connect(mongoURI)
-  .then(() => console.log('Connected to MongoDB'))
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
   .catch((err) => {
     console.error('Error connecting to MongoDB:', err);
-    process.exit(1);  // Exit the process if connection fails
+    process.exit(1); // 连接失败时退出程序
   });
 
-// Book model
+// 创建 Book 模型
 const bookSchema = new mongoose.Schema({
   author: String,
   name: String,
@@ -34,22 +29,22 @@ const bookSchema = new mongoose.Schema({
 
 const Book = mongoose.model('Book', bookSchema);
 
-// POST route to save book info
+// POST 路由：保存书籍信息
 app.post('/api/book', async (req, res) => {
   const { author, name, pages } = req.body;
 
   try {
     const book = new Book({ author, name, pages });
     await book.save();
-    res.status(201).json(book);
+    res.status(201).json(book);  // 返回成功创建的书籍数据
   } catch (error) {
     console.error('Error saving book:', error);
     res.status(500).json({ message: 'Failed to save book' });
   }
 });
 
-// Start server on port 1234 (change from 3000 to avoid conflict with React app)
-const PORT = 1234;
+// 启动服务器
+const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
