@@ -5,10 +5,10 @@ import bodyParser from 'body-parser';
 
 const app = express();
 
-// Enable CORS for development mode only
+// Enable CORS only in development mode
 if (process.env.NODE_ENV === 'development') {
   const corsOptions = {
-    origin: 'http://localhost:3000',  // React frontend port
+    origin: 'http://localhost:3000', // React frontend port
     optionsSuccessStatus: 200,
   };
   app.use(cors(corsOptions)); // Use the cors middleware with the specified options
