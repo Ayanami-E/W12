@@ -15,9 +15,8 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// MongoDB connection
-const DB_NAME = 'booksdb'; // 使用指定的数据库名称
-const mongoURI = `mongodb://localhost:27017/${DB_NAME}`;
+// MongoDB connection - use 'test' database for compatibility with test environment
+const mongoURI = 'mongodb://localhost:27017/test';
 
 mongoose.connect(mongoURI)
   .then(() => {
@@ -41,7 +40,7 @@ const bookSchema = new mongoose.Schema<IBook>({
   name: { type: String, required: true },
   pages: { type: Number, required: true }
 }, {
-  collection: 'books' // 明确指定集合名称为 'books'
+  collection: 'books' // explicitly set collection name
 });
 
 const Book = mongoose.model<IBook>('Book', bookSchema);
