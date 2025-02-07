@@ -8,7 +8,7 @@ const app = express();
 // Enable CORS for development mode
 if (process.env.NODE_ENV === 'development') {
   const corsOptions = {
-    origin: 'http://localhost:5173',  // Allow frontend on port 5173 (Vite's default port)
+    origin: 'http://localhost:3000',  // Allow frontend on port 3000 (Vite's default port)
     optionsSuccessStatus: 200,
   };
   app.use(cors(corsOptions));
@@ -48,8 +48,8 @@ app.post('/api/book', async (req, res) => {
   }
 });
 
-// Start server on port 3000
-const PORT = 3000;
+// Start server on port 1234 (change from 3000 to avoid conflict with React app)
+const PORT = 1234;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
