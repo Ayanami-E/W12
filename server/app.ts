@@ -15,37 +15,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// MongoDB connection
-const mongoURI = 'mongodb://localhost:27017/test';
-
-// Initialize database and ensure collection exists
-async function initializeDatabase() {
-  try {
-    await mongoose.connect(mongoURI);
-    console.log('Connected to MongoDB');
-
-    // Create an empty document to ensure collection exists
-    const Book = mongoose.model('Book', new mongoose.Schema({
-      author: String,
-      name: String,
-      pages: Number
-    }, { collection: 'books' }));
-
-    const collections = await mongoose.connection.db.listCollections().toArray();
-    if (!collections.find(c => c.name === 'books')) {
-      await Book.createCollection();
-      console.log('Books collection created');
-    }
-  } catch (err) {
-    console.error('Database initialization error:', err);
-    process.exit(1);
-  }
-}
-
-// Initialize database
-initializeDatabase();
-
-// Define interfaces
+// Define Book interface
 interface IBook {
   author: string;
   name: string;
@@ -61,6 +31,27 @@ const bookSchema = new mongoose.Schema<IBook>({
   collection: 'books'
 });
 
+// MongoDB connection and model setup
+const mongoURI = 'mongodb://localhost:27017/test';
+
+mongoose.connect(mongoURI)
+  .then(async () => {
+    console.log('Connected to MongoDB');
+    try {
+      // Try to create the collection if it doesn't exist
+      await mongoose.connection.db.createCollection('books');
+      console.log('Books collection created or already exists');
+    } catch (err) {
+      // Ignore error if collection already exists
+      console.log('Collection setup completed');
+    }
+  })
+  .catch((err) => {
+    console.error('Error connecting to MongoDB:', err);
+    process.exit(1);
+  });
+
+// Create Book model
 const Book = mongoose.model<IBook>('Book', bookSchema);
 
 // POST route to save book
