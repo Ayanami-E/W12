@@ -5,31 +5,30 @@ function App() {
   const [name, setName] = useState('');
   const [pages, setPages] = useState<number>(0);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
-
-    // 注意：这里使用 /api/... 而不是 http://localhost:1234/api/...
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const response = await fetch('/api/book', {
+      // 直接访问后端 http://localhost:1234/api/book
+      const response = await fetch('http://localhost:1234/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ author, name, pages }),
       });
 
       if (response.ok) {
-        const data = await response.json();
-        console.log('Book added:', data);
+        const book = await response.json();
+        console.log('Book added:', book);
       } else {
         console.error('Failed to add book');
       }
-    } catch (error) {
-      console.error('Error:', error);
+    } catch (err) {
+      console.error('Error:', err);
     }
   };
 
   return (
     <div>
-      <h1>Books</h1>
+      <h1>Add Book</h1>
       <form onSubmit={handleSubmit}>
         <input
           type="text"
@@ -39,7 +38,7 @@ function App() {
         />
         <input
           type="text"
-          placeholder="Name"
+          placeholder="Book Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
