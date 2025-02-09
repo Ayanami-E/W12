@@ -10,7 +10,7 @@ function App() {
     const bookData = { author, name, pages };
 
     try {
-      const response = await fetch('http://localhost:5173/api/book', {
+      const response = await fetch('http://localhost:1234/api/book', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
