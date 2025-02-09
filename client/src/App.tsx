@@ -3,26 +3,24 @@ import React, { useState } from 'react';
 function App() {
   const [author, setAuthor] = useState('');
   const [name, setName] = useState('');
-  const [pages, setPages] = useState(0);
+  const [pages, setPages] = useState<number>(0);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    const bookData = { author, name, pages };
 
+    // 注意：这里使用 /api/... 而不是 http://localhost:1234/api/...
     try {
-      const response = await fetch('http://localhost:1234/api/book', {
+      const response = await fetch('/api/book', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookData),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ author, name, pages }),
       });
 
       if (response.ok) {
-        const result = await response.json();
-        console.log('Book added:', result);
+        const data = await response.json();
+        console.log('Book added:', data);
       } else {
-        console.error('Error adding book');
+        console.error('Failed to add book');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -41,7 +39,7 @@ function App() {
         />
         <input
           type="text"
-          placeholder="Book Name"
+          placeholder="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
