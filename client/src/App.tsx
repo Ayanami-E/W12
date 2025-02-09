@@ -1,55 +1,86 @@
+// client/src/App.tsx
 import React, { useState } from 'react';
 
 function App() {
-  const [author, setAuthor] = useState('');
+  // 定义表单状态
   const [name, setName] = useState('');
-  const [pages, setPages] = useState<number>(0);
+  const [author, setAuthor] = useState('');
+  const [pages, setPages] = useState('');
+  const [message, setMessage] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // 表单提交处理函数
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setMessage('');
+
+    // 将 pages 转换为数字
+    const pagesNumber = Number(pages);
+    if (isNaN(pagesNumber)) {
+      setMessage('Pages must be a number.');
+      return;
+    }
+
+    const book = { name, author, pages: pagesNumber };
+
     try {
-      // 直接访问后端 http://localhost:1234/api/book
-      const response = await fetch('http://localhost:1234/api/book', {
+      const response = await fetch('/api/book', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ author, name, pages }),
+        body: JSON.stringify(book),
       });
-
       if (response.ok) {
-        const book = await response.json();
-        console.log('Book added:', book);
+        setMessage('Book saved successfully!');
+        setName('');
+        setAuthor('');
+        setPages('');
       } else {
-        console.error('Failed to add book');
+        setMessage('Error saving book.');
       }
-    } catch (err) {
-      console.error('Error:', err);
+    } catch (error) {
+      console.error(error);
+      setMessage('Error saving book.');
     }
   };
 
   return (
     <div>
-      <h1>Add Book</h1>
+      <h1>books</h1>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Author"
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-        />
-        <input
-          type="text"
-          placeholder="Book Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <input
-          type="number"
-          placeholder="Pages"
-          value={pages}
-          onChange={(e) => setPages(Number(e.target.value))}
-        />
-        <button type="submit">Add Book</button>
+        <div>
+          <label htmlFor="name">Book Name:</label>
+          <input
+            id="name"
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="author">Author:</label>
+          <input
+            id="author"
+            type="text"
+            value={author}
+            onChange={e => setAuthor(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label htmlFor="pages">Pages:</label>
+          <input
+            id="pages"
+            type="number"
+            value={pages}
+            onChange={e => setPages(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <input id="submit" type="submit" value="Submit" />
+        </div>
       </form>
+      {message && <p>{message}</p>}
     </div>
   );
 }
