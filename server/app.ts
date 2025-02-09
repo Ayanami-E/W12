@@ -17,10 +17,7 @@ app.use(bodyParser.json());
 
 // 连接到 MongoDB
 const mongoURI = 'mongodb://localhost:27017/booksdb'; // 替换为你自己的 MongoDB 连接字符串
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(mongoURI)
   .then(() => console.log('Connected to MongoDB'))
   .catch(err => {
     console.error('Error connecting to MongoDB:', err);
